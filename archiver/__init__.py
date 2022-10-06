@@ -1,1 +1,1 @@
-from archiver import archiver
+from archiver.archiver import Archiver
