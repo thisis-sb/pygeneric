@@ -6,17 +6,16 @@ Assumptions: meta data is managed by user
 import os
 import gzip
 import pickle
-
-LOG_DIR = os.path.join(os.getenv('HOME_DIR'), '98_log/pygeneric')
+from zipfile import ZipFile
 
 class Archiver:
     archive_name = None
     key_value_dict = None
     mode = None
     active = None
-    compressed = None
+    compression = None
 
-    def __init__(self, full_path, mode, compressed=True, overwrite=False):
+    def __init__(self, full_path, mode, compression='zip', overwrite=False):
         assert mode == 'r' or mode == 'w'
 
         if mode == 'w':
@@ -27,16 +26,25 @@ class Archiver:
                     raise RuntimeError(f'archive {full_path} already exists')
             self.key_value_dict = {}
         else:
-            if not os.path.exists(full_path):
-                raise RuntimeError(f'archive {full_path} does not exist')
-            if compressed:
+            if compression == 'zip':
+                if not os.path.exists(full_path):
+                    raise RuntimeError(f'archive {full_path} does not exist')
+            else:
+                if not os.path.exists(full_path):
+                    raise RuntimeError(f'archive {full_path} does not exist')
+
+            if compression == 'zip':
+                self.key_value_dict = {}
+                with ZipFile(full_path) as myzip:
+                    for f in myzip.namelist():
+                        self.key_value_dict[f] = myzip.read(f)
+            elif compression == 'pickle':
                 with gzip.open(full_path, 'rb') as f:
                     self.key_value_dict = pickle.load(f)
             else:
-                with open(full_path, 'rb') as f:
-                    self.key_value_dict = pickle.load(f)
+                assert False, f'Invalid compression: {compression}'
 
-        self.compressed = compressed
+        self.compression = compression
         self.archive_name = full_path
         self.mode = mode
         self.active = True
@@ -51,49 +59,22 @@ class Archiver:
     def size(self):
         return len(self.key_value_dict) if self.active else None
 
+    def keys(self):
+        return list(self.key_value_dict.keys())
+
     def flush(self):
         if self.active and self.mode == 'w':
-            if self.compressed:
+            if self.compression == 'zip':
+                with ZipFile(self.archive_name, 'w') as myzip:
+                    for f in list(self.key_value_dict.keys()):
+                        myzip.writestr(f, self.key_value_dict[f])
+            elif self.compression == 'pickle':
                 with gzip.open(self.archive_name, 'wb') as f:
                     pickle.dump(self.key_value_dict, f)
             else:
-                with open(self.archive_name, 'wb') as f:
-                    pickle.dump(self.key_value_dict, f)
+                assert False, f'Invalid compression: {compression}'
             self.active = None
             self.archive_name = None
             self.key_value_dict = None
             self.mode = None
             self.compressed = None
-
-''' -------------------------------------------------------------------------------------------- '''
-if __name__ == '__main__':
-    archive_name = LOG_DIR + '/test_archive'
-    ARCHIVE_SIZE = int(1e6)
-
-    a1 = Archiver(archive_name, 'w', overwrite=True, compressed=True)
-    for i in range(0, ARCHIVE_SIZE):
-        a1.add(f'id_{i}', 100*f'{i}')
-    a1.flush()
-    print('Test 1: OK')
-
-    try:
-        a2 = Archiver(archive_name, 'w')
-        print('THIS SHOULD NEVER BE PRINTED')
-    except:
-        print('Test 2: OK')
-
-    a3 = Archiver(archive_name, 'r', compressed=True)
-    assert a3.size() == ARCHIVE_SIZE, 'Test 3 failed'
-    print('Test 3: OK')
-
-    for i in range(1, ARCHIVE_SIZE):
-        assert a3.get(f'id_{i}') == 100*f'{i}', 'Test 4 failed'
-
-    print('Test 4: OK')
-
-    try:
-        a1 = Archiver(archive_name, 'w')
-    except:
-        print('Test 5: OK')
-
-    print('All tests passed')
