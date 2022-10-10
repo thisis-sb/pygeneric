@@ -2,23 +2,25 @@ import requests
 import json
 import traceback
 
+def http_request_header():
+    return {
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                      '(KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
+        'accept-language': 'en,gu;q=0.9,hi;q=0.8',
+        'accept-encoding': 'gzip, deflate, br'
+    }
+
 def http_get(url, website='nse'):
     assert website == 'nse', f'{website}: Invalid website'
     base_urls = {'nse':'https://www.nseindia.com'}
-
-    headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                             '(KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
-               'accept-language': 'en,gu;q=0.9,hi;q=0.8',
-               'accept-encoding': 'gzip, deflate, br'
-    }
 
     outcome, tries, err_list = False, 0, []
     while not outcome and tries < 5:
         try:
             session = requests.Session()
-            request = session.get(base_urls[website], headers=headers, timeout=5)
+            request = session.get(base_urls[website], headers=http_request_header(), timeout=5)
             cookies = dict(request.cookies)
-            response = session.get(url, headers=headers, timeout=5, cookies=cookies)
+            response = session.get(url, headers=http_request_header(), timeout=5, cookies=cookies)
             if response.status_code == 200:
                 result_dict = json.loads(response.text)
                 session.close()
