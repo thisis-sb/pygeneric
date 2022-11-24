@@ -15,16 +15,19 @@ class Archiver:
     active = None
     compression = None
 
-    def __init__(self, full_path, mode, compression='zip', overwrite=False):
+    def __init__(self, full_path, mode, compression='zip', update=False):
         assert mode == 'r' or mode == 'w'
+        self.compression = compression
+        self.archive_name = full_path
+        self.mode = mode
 
         if mode == 'w':
+            self.key_value_dict = {}
             if os.path.exists(full_path):
-                if overwrite:
-                    os.remove(full_path)
+                if update:
+                    self.load()
                 else:
                     raise RuntimeError(f'archive {full_path} already exists')
-            self.key_value_dict = {}
         else:
             if compression == 'zip':
                 if not os.path.exists(full_path):
@@ -44,22 +47,27 @@ class Archiver:
             else:
                 assert False, f'Invalid compression: {compression}'
 
-        self.compression = compression
-        self.archive_name = full_path
-        self.mode = mode
         self.active = True
 
     def add(self, key, data):
+        if not self.active:
+            assert False, f'Archive is in Inactive state'
         if self.mode == 'w' and self.active:
             self.key_value_dict[key] = data
 
     def get(self, key):
+        if not self.active:
+            assert False, f'Archive is in Inactive state'
         return self.key_value_dict[key] if (self.mode == 'r' and self.active) else None
 
     def size(self):
+        if not self.active:
+            assert False, f'Archive is in Inactive state'
         return len(self.key_value_dict) if self.active else None
 
     def keys(self):
+        if not self.active:
+            assert False, f'Archive is in Inactive state'
         return list(self.key_value_dict.keys())
 
     def flush(self):
@@ -78,3 +86,17 @@ class Archiver:
             self.key_value_dict = None
             self.mode = None
             self.compressed = None
+        else:
+            assert False, f'Archive is in Inactive state'
+
+    def load(self):
+        if self.compression == 'zip':
+            self.key_value_dict = {}
+            with ZipFile(self.archive_name) as myzip:
+                for f in myzip.namelist():
+                    self.key_value_dict[f] = myzip.read(f)
+        elif self.compression == 'pickle':
+            with gzip.open(self.archive_name, 'rb') as f:
+                self.key_value_dict = pickle.load(f)
+        else:
+            assert False, f'Invalid compression: {compression}'
