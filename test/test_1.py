@@ -31,7 +31,7 @@ if __name__ == '__main__':
     ''' Test 3'''
     try:
         a3 = Archiver(archive_name, 'w')
-        print('THIS SHOULD NEVER BE PRINTED')
+        print('Test 3: THIS SHOULD NEVER BE PRINTED')
     except:
         print('Test 3: OK')
 
@@ -48,5 +48,21 @@ if __name__ == '__main__':
         a5 = Archiver(archive_name, 'w')
     except:
         print('Test 5: OK')
+
+    ''' Test 6'''
+    try:
+        a6 = Archiver(archive_name, 'w')
+        print('Test 6: THIS SHOULD NEVER BE PRINTED')
+    except:
+        print('Test 6: OK')
+
+    ''' Test 7'''
+    a7 = Archiver(archive_name, 'w', overwrite=True)
+    assert a7.size() == 0, 'Test 7 failed'
+    for i in range(0, ARCHIVE_SIZE):
+        a7.add(f'id_{i}', bytes(FILE_SIZE*f'{i}', 'utf-8'))
+    assert a7.size() == ARCHIVE_SIZE, 'Test 7 failed'
+    a7.flush()
+    print('Test 7: OK')
 
     print('All tests passed')

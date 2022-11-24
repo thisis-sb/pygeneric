@@ -15,7 +15,7 @@ class Archiver:
     active = None
     compression = None
 
-    def __init__(self, full_path, mode, compression='zip', update=False):
+    def __init__(self, full_path, mode, compression='zip', update=False, overwrite=False):
         assert mode == 'r' or mode == 'w'
         self.compression = compression
         self.archive_name = full_path
@@ -26,6 +26,8 @@ class Archiver:
             if os.path.exists(full_path):
                 if update:
                     self.load()
+                elif overwrite:
+                    os.remove(full_path)
                 else:
                     raise RuntimeError(f'archive {full_path} already exists')
         else:
@@ -70,8 +72,10 @@ class Archiver:
             assert False, f'Archive is in Inactive state'
         return list(self.key_value_dict.keys())
 
-    def flush(self):
+    def flush(self, create_parent_dir=False):
         if self.active and self.mode == 'w':
+            if create_parent_dir and not os.path.exists(os.path.dirname(self.archive_name)):
+                os.mkdir(os.path.dirname(self.archive_name))
             if self.compression == 'zip':
                 with ZipFile(self.archive_name, 'w') as myzip:
                     for f in list(self.key_value_dict.keys()):
