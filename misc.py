@@ -19,3 +19,8 @@ def df2print_segrows(df, col):
     df1 = pd.DataFrame('', index=mask.index[mask] + .5, columns=df.columns)
     df = pd.concat([df, df1]).sort_index().reset_index(drop=True).iloc[:-1]
     return df
+
+def method(qual=None):
+    from traceback import extract_stack
+    m = str(extract_stack()[-2]).split()[-1].split('>')[0]
+    return '%s.%s' % (qual, m) if qual is not None else m
