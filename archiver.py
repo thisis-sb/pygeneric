@@ -67,6 +67,15 @@ class Archiver:
             assert False, f'Archive is in Inactive state'
         return len(self.key_value_dict) if self.active else None
 
+    def data_size(self):
+        if not self.active:
+            assert False, f'Archive is in Inactive state'
+        ds = 0
+        for k in self.key_value_dict.keys():
+            ds += len(k)
+            ds += len(self.key_value_dict[k])
+        return ds
+
     def keys(self):
         if not self.active:
             assert False, f'Archive is in Inactive state'
