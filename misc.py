@@ -24,3 +24,10 @@ def method(qual=None):
     from traceback import extract_stack
     m = str(extract_stack()[-2]).split()[-1].split('>')[0]
     return '%s.%s' % (qual, m) if qual is not None else m
+
+def is_number(num_str):
+    try:
+        float(num_str)
+    except ValueError:
+        return False
+    return True
