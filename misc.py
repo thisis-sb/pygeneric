@@ -31,3 +31,10 @@ def is_number(num_str):
     except ValueError:
         return False
     return True
+
+def segregate_rows(df, col):
+    ''' Silly but works '''
+    mask = df[col].ne(df[col].shift(-1))
+    df1 = pd.DataFrame('', index=mask.index[mask] + .5, columns=df.columns)
+    df = pd.concat([df, df1]).sort_index().reset_index(drop=True).iloc[:-1]
+    return df
