@@ -1,5 +1,5 @@
 """
-http utils
+HttpDownloads class
 """
 ''' --------------------------------------------------------------------------------------- '''
 
@@ -8,7 +8,9 @@ import json
 import traceback
 
 ''' --------------------------------------------------------------------------------------- '''
+
 def http_request_header():
+    # retire / move inside HttpDownloads after all requests.get are retired '''
     return {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                       '(KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
@@ -16,35 +18,12 @@ def http_request_header():
         'accept-encoding': 'gzip, deflate, br'
     }
 
-
-''' retire at some point in future as class is better '''
-def http_get(url, website='nse'):
-    assert website == 'nse', f'{website}: Invalid website'
-    base_urls = {'nse': 'https://www.nseindia.com'}
-
-    outcome, tries, err_list = False, 0, []
-    while not outcome and tries < 5:
-        try:
-            session = requests.Session()
-            request = session.get(base_urls[website], headers=http_request_header(), timeout=5)
-            cookies = dict(request.cookies)
-            response = session.get(url, headers=http_request_header(), timeout=5, cookies=cookies)
-            if response.status_code == 200:
-                result_dict = json.loads(response.text)
-                session.close()
-                return result_dict
-            tries += 1
-            err_list.append('ERROR! http_get: code = %d, link = [%s]' % (response.status_code, url))
-        except Exception as e:
-            tries += 1
-            err_list.append('ERROR! Exception: [%s] [%s]' % (e, traceback.format_exc()))
-    print('Exhausted retries, http_get failed. Error list\n', err_list)
-    return None
-
 class HttpDownloads:
     def __init__(self, website='nse', max_tries=5, timeout=5):
         self.base_urls = {'nse': 'https://www.nseindia.com',
-                 'te': 'https://tradingeconomics.com'}
+                          'te': 'https://tradingeconomics.com',
+                          'stlouisfed':'https://api.stlouisfed.org'
+                          }
         self.website = website
         self.max_tries = max_tries
         self.timeout  = timeout
@@ -77,13 +56,13 @@ class HttpDownloads:
     def http_get_json(self, url):
         data = self.http_get(url)
         if data is None or len(data) == 0:
-            raise ValueError('http_get failed, data =', data)
+            raise ValueError('http_get_json failed, data =', data)
         return json.loads(data)
 
     def http_get_both(self, url):
         data = self.http_get(url)
         if data is None or len(data) == 0:
-            raise ValueError('http_get failed, data =', data)
+            raise ValueError('http_get_both failed, data =', data)
         return json.loads(data), data
 
     def initialize_session(self):
