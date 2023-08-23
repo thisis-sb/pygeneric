@@ -22,7 +22,8 @@ class HttpDownloads:
     def __init__(self, website='nse', max_tries=5, timeout=5):
         self.base_urls = {'nse': 'https://www.nseindia.com',
                           'te': 'https://tradingeconomics.com',
-                          'stlouisfed':'https://api.stlouisfed.org'
+                          'stlouisfed':'https://api.stlouisfed.org',
+                          'yf':'https://finance.yahoo.com'
                           }
         self.website = website
         self.max_tries = max_tries
