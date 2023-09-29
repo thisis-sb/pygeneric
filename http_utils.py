@@ -21,13 +21,14 @@ def http_request_header():
 class HttpDownloads:
     def __init__(self, website='nse', max_tries=5, timeout=5):
         self.base_urls = {'nse': 'https://www.nseindia.com',
+                          'bse': 'https://www.bseindia.com',
                           'te': 'https://tradingeconomics.com',
-                          'stlouisfed':'https://api.stlouisfed.org',
-                          'yf':'https://finance.yahoo.com'
+                          'stlouisfed': 'https://api.stlouisfed.org',
+                          'yf': 'https://finance.yahoo.com'
                           }
         self.website = website
-        self.max_tries = max_tries
-        self.timeout  = timeout
+        self.max_tries = 10
+        self.timeout  = 30
         self.counter  = 0
         self.session = None
         self.cookies = None
