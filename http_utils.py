@@ -24,7 +24,8 @@ class HttpDownloads:
                           'bse': 'https://www.bseindia.com',
                           'te': 'https://tradingeconomics.com',
                           'stlouisfed': 'https://api.stlouisfed.org',
-                          'yf': 'https://finance.yahoo.com'
+                          'yf': 'https://finance.yahoo.com',
+                          'zerodha':'https://www.zerodha.com'
                           }
         self.website = website
         self.max_tries = 10
