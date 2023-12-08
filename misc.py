@@ -70,4 +70,4 @@ def eval_formula(formula_str, attr_dict, nan_as_zero=False, round_to=2, verbose=
     if verbose:
         print('result:', val)
 
-    return val
+    return round(val, round_to)
