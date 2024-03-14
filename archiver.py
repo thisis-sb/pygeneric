@@ -13,6 +13,7 @@ class Archiver:
     key_value_dict = None
     mode = None
     active = None
+    updated = False
     compression = None
 
     def __init__(self, full_path, mode, compression='zip', update=False, overwrite=False):
@@ -56,6 +57,16 @@ class Archiver:
             assert False, f'Archive is in Inactive state'
         if self.mode == 'w' and self.active:
             self.key_value_dict[key] = data
+            self.updated = True
+        return
+
+    def remove(self, key):
+        assert self.active, f'Archive is in Inactive state'
+        if self.mode == 'w' and self.active:
+            del self.key_value_dict[key]
+            self.updated = True
+        return
+
 
     def get(self, key):
         if not self.active:
@@ -82,25 +93,32 @@ class Archiver:
         return list(self.key_value_dict.keys())
 
     def flush(self, create_parent_dir=False):
-        if self.active and self.mode == 'w':
-            if create_parent_dir and not os.path.exists(os.path.dirname(self.archive_name)):
-                os.mkdir(os.path.dirname(self.archive_name))
-            if self.compression == 'zip':
-                with ZipFile(self.archive_name, 'w') as myzip:
-                    for f in list(self.key_value_dict.keys()):
-                        myzip.writestr(f, self.key_value_dict[f])
-            elif self.compression == 'pickle':
-                with gzip.open(self.archive_name, 'wb') as f:
-                    pickle.dump(self.key_value_dict, f)
-            else:
-                assert False, f'Invalid compression: {compression}'
-            self.active = None
-            self.archive_name = None
-            self.key_value_dict = None
-            self.mode = None
-            self.compressed = None
+        assert self.active and self.mode == 'w', \
+            f'flush call not allowed: archive state: active: {self.active}, mode: {self.mode}'
+
+        ''' returns True if flush was indeed done, else False'''
+        if not self.updated:
+            return False
+
+        if create_parent_dir and not os.path.exists(os.path.dirname(self.archive_name)):
+            os.mkdir(os.path.dirname(self.archive_name))
+        if self.compression == 'zip':
+            with ZipFile(self.archive_name, 'w') as myzip:
+                for f in list(self.key_value_dict.keys()):
+                    myzip.writestr(f, self.key_value_dict[f])
+        elif self.compression == 'pickle':
+            with gzip.open(self.archive_name, 'wb') as f:
+                pickle.dump(self.key_value_dict, f)
         else:
-            assert False, f'Archive is in Inactive state'
+            assert False, f'Invalid compression: {compression}'
+        self.active = None
+        self.updated = False
+        self.archive_name = None
+        self.key_value_dict = None
+        self.mode = None
+        self.compressed = None
+
+        return True
 
     def load(self):
         if self.compression == 'zip':

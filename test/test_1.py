@@ -1,4 +1,5 @@
 import os
+import random
 from archiver import Archiver
 
 ''' -------------------------------------------------------------------------------------------- '''
@@ -64,5 +65,26 @@ if __name__ == '__main__':
     assert a7.size() == ARCHIVE_SIZE, 'Test 7 failed'
     a7.flush()
     print('Test 7: OK')
+
+    ''' Test 8: Archiver remove '''
+    a8 = Archiver(archive_name, 'w', overwrite=True)
+    assert a8.size() == 0, 'Test 8 failed'
+    for i in range(0, ARCHIVE_SIZE):
+        a8.add(f'id_{i}', bytes(FILE_SIZE*f'{i}', 'utf-8'))
+    assert a8.size() == len(a8.keys()) == ARCHIVE_SIZE, 'Test 8 failed'
+    N_REMOVE = 5
+    random_sample = random.sample(range(0, ARCHIVE_SIZE), N_REMOVE)
+    assert len(random_sample) == N_REMOVE, 'Test 8 failed'
+    a8_keys = a8.keys()
+    keys_2_remove = [a8_keys[k] for k in random_sample]
+    for k in keys_2_remove:
+        a8.remove(k)
+    a8_keys_left = [k for k in a8_keys if k not in keys_2_remove]
+    assert a8.keys() == a8_keys_left, 'Test 8 failed'
+    assert a8.size() == len(a8.keys()) == (ARCHIVE_SIZE - N_REMOVE), 'Test 8 failed'
+    a8.flush()
+    a8 = Archiver(archive_name, 'r')
+    assert a8.keys() == a8_keys_left, 'Test 8 failed'
+    print('Test 8: OK')
 
     print('All tests passed')
