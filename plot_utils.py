@@ -11,6 +11,7 @@ def default_plot_settings(font_size=6, font_weight='bold'):
     plt.rcParams["font.size"] = font_size
     plt.rcParams["font.weight"] = font_weight
     plt.rcParams['lines.linewidth'] = 1
+    plt.rcParams["legend.loc"] = 'upper left'
     return
 
 def format_plot(ax, title, ylim=None, style=None, yscale=None, x_interval=1, x_format='%b'):

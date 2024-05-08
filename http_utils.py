@@ -23,7 +23,7 @@ class HttpDownloads:
         self.base_urls = {'nse': 'https://www.nseindia.com',
                           'bse': 'https://www.bseindia.com',
                           'te': 'https://tradingeconomics.com',
-                          'stlouisfed': 'https://api.stlouisfed.org',
+                          'fred': 'https://api.stlouisfed.org',
                           'yf': 'https://finance.yahoo.com',
                           'zerodha':'https://www.zerodha.com'
                           }
