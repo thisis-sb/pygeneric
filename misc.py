@@ -51,15 +51,13 @@ def eval_formula(formula_str, metrics_dict, nan_as_zero=False, round_to=2, verbo
     assert 'system' not in formula_str, 'formula_str: %s' % formula_str
     assert 'os' not in formula_str, 'formula_str: %s' % formula_str
 
-    # I think this is not needed --> remove later, once sure
-    # if not nan_as_zero and ('nan' in formula_str or 'NaN' in formula_str):
-    #    formula_val = math.nan
-    # else:
-
-    try:
-        formula_val = round(eval(formula_str), round_to)
-    except ZeroDivisionError:
+    if not nan_as_zero and ('nan' in formula_str or 'NaN' in formula_str):
         formula_val = math.nan
+    else:
+        try:
+            formula_val = round(eval(formula_str), round_to)
+        except ZeroDivisionError:
+            formula_val = math.nan
 
     if verbose:
         print('result:', formula_val)
