@@ -1,9 +1,11 @@
 """
 Miscellaneous methods
 """
+''' ------------------------------------------------------------------------------------------ '''
 
 import sys
-from math import isnan, nan
+import math
+import re
 import pandas as pd
 
 def progress_str(n1, n2):
@@ -33,41 +35,33 @@ def segregate_rows(df, col):
     df = pd.concat([df, df1]).sort_index().reset_index(drop=True).iloc[:-1]
     return df
 
-def eval_formula(formula_str, attr_dict, nan_as_zero=False, round_to=2, verbose=False):
-    ''' parse & evaluate formula '''
+def eval_formula(formula_str, metrics_dict, nan_as_zero=False, round_to=2, verbose=False):
     if verbose:
         print('eval_formula: formula_str:', formula_str)
-    still_there = True
-    while still_there:
-        x1 = formula_str.split('[')
-        if len(x1) > 1:
-            x2 = x1[1].split(']')
-            if len(x2) > 1:
-                attr_1 = x2[0]
-            else:
-                still_there = False
-                continue
-            ''' harsh: proceed only if present in attr_dict'''
-            assert attr_1 in attr_dict.keys(), f'{attr_1} not in attr_dict'
-            attr_val = attr_dict[attr_1] if attr_1 in list(attr_dict.keys()) else nan
-            if nan_as_zero and isnan(attr_val):
-                attr_val = 0
-            formula_str = formula_str.replace('[%s]' % attr_1, f'{attr_val}')
-        else:
-            still_there = False
-            continue
+
+    var_list = re.findall(r'\[.*?\]', formula_str)
+    for var in var_list:
+        val = metrics_dict[var[1:-1]] if var[1:-1] in list(metrics_dict.keys()) else math.nan
+        if nan_as_zero and pd.isnull(val):
+            val = 0
+        formula_str = formula_str.replace(var, str(val))
     if verbose:
-        print('    parsed to:', formula_str, end=', ')
+        print('  parsed to:', formula_str, end=', ')
+
     assert 'system' not in formula_str, 'formula_str: %s' % formula_str
+    assert 'os' not in formula_str, 'formula_str: %s' % formula_str
 
-    if 'nan' in formula_str and not nan_as_zero:
-        val = nan
-    else:
-        try:
-            val = round(eval(formula_str), 2)
-        except ZeroDivisionError:
-            val = nan
+    # I think this is not needed --> remove later, once sure
+    # if not nan_as_zero and ('nan' in formula_str or 'NaN' in formula_str):
+    #    formula_val = math.nan
+    # else:
+
+    try:
+        formula_val = round(eval(formula_str), round_to)
+    except ZeroDivisionError:
+        formula_val = math.nan
+
     if verbose:
-        print('result:', val)
+        print('result:', formula_val)
 
-    return round(val, round_to)
+    return formula_val
