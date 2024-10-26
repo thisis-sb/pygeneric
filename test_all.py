@@ -6,8 +6,9 @@ import io
 from zipfile import ZipFile
 import pandas as pd
 from archiver import Archiver
-import fin_utils
 import datetime_utils
+import fin_utils
+import misc
 
 def test_archiver_1():
     LOG_DIR = os.path.join(os.getenv('HOME_DIR'), '98_log/pygeneric')
@@ -151,8 +152,15 @@ def test_archiver_2():
     return True
 
 ''' -------------------------------------------------------------------------------------------- '''
-if __name__ == '__main__':
+def test_me(verbose=False):
     assert test_archiver_1()
     assert test_archiver_2()
     assert fin_utils.test_me()
     assert datetime_utils.test_me()
+    assert misc.test_me()
+    return True
+
+''' -------------------------------------------------------------------------------------------- '''
+if __name__ == '__main__':
+    test_me()
+    print('All OK')
