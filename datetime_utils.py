@@ -1,5 +1,5 @@
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 _timers_dict = {}
 def _time_since_last(id, precision=0):
@@ -25,14 +25,10 @@ def remove_timers(id):
 def remove_all_timers():
     _timers_dict.clear()
 
-"""def last_n_pe_dates(n, last_period=None):
-    end_date_str = date.today().strftime('%Y-%m-%d') if last_period is None else last_period
-    pe_dates = []
-    for yr in range(2018, datetime.strptime(end_date_str, '%Y-%m-%d').year + 1):
-        for dt in ['%d-03-31' % yr, '%d-06-30' % yr, '%d-09-30' % yr, '%d-12-31' % yr]:
-            if dt <= end_date_str:
-                pe_dates.append(dt)
-    return pe_dates[-n:]"""
+def get_month_end_dates(year):
+    dates = [(datetime(year, m, 1) - timedelta(days=1)).strftime('%Y-%m-%d') for m in range(2,13)]
+    dates.append((datetime(year+1, 1, 1) - timedelta(days=1)).strftime('%Y-%m-%d'))
+    return sorted(dates)
 
 def get_period_ends(**kwargs):
     pe = kwargs['pe'] if 'pe' in kwargs.keys() else None
@@ -111,6 +107,16 @@ def test_me(verbose=False):
     assert len(_timers_dict.keys()) >= 5
     remove_all_timers()
     assert len(_timers_dict.keys()) == 0
+
+    assert get_month_end_dates(2022) == ['2022-01-31', '2022-02-28', '2022-03-31', '2022-04-30',
+                                         '2022-05-31', '2022-06-30', '2022-07-31', '2022-08-31',
+                                         '2022-09-30', '2022-10-31', '2022-11-30', '2022-12-31']
+    assert get_month_end_dates(2023) == ['2023-01-31', '2023-02-28', '2023-03-31', '2023-04-30',
+                                         '2023-05-31', '2023-06-30', '2023-07-31', '2023-08-31',
+                                         '2023-09-30', '2023-10-31', '2023-11-30', '2023-12-31']
+    assert get_month_end_dates(2024) == ['2024-01-31', '2024-02-29', '2024-03-31', '2024-04-30',
+                                         '2024-05-31', '2024-06-30', '2024-07-31', '2024-08-31',
+                                         '2024-09-30', '2024-10-31', '2024-11-30', '2024-12-31']
 
     return True
 
